@@ -1,0 +1,76 @@
+begintemplate SThcell
+public soma, treeA, treeB 
+
+create soma, treeA[1], treeB[1]
+objectvar f
+
+proc init() {local i, me, child1, child2
+
+    create soma
+
+    soma {
+      nseg = 1
+      diam = 18.8
+      L = 18.8
+      Ra = 123.0
+      insert hh
+      gnabar_hh=0.25
+      gl_hh = .0001666
+      el_hh = -60.0
+    }
+
+f = new File()
+  f.ropen("treeA.dat")
+
+ndendA = f.scanvar()
+   create treeA[ndendA]
+
+ for i = 0,ndendA-1 {
+      me = f.scanvar() - 1
+      child1 = f.scanvar() - 1
+      child2 = f.scanvar() - 1
+
+      treeA[me] {
+        nseg = 1
+        diam = f.scanvar()
+        L = f.scanvar()
+        Ra = 123
+        // initialise and clear the 3D information
+        pt3dclear()
+        pt3dadd(f.scanvar(),f.scanvar(),f.scanvar(),diam)
+        pt3dadd(f.scanvar(),f.scanvar(),f.scanvar(),diam)
+        insert pas
+        g_pas = .0001666
+        e_pas = -60.0
+    
+        if (child1 >= 0) {
+          connect treeA[child1](0), 1
+        }
+        if (child2 >= 0) {
+          connect treeA[child2](0), 1
+        }
+      }
+    }
+
+begintemplate SThcell
+public soma, treeA, treeB, nclist
+
+create soma, treeA[1], treeB[1]
+objectvar f, nclist
+
+proc init() {local i, me, child1, child2
+
+    create soma
+
+    nclist = new List()
+
+maxsyn = 10
+objectvar syn[maxsyn]
+
+SThcells[0].treeA[7] syn[0] = new ExpSyn(0)
+
+new NetCon(&source_v, synapse, threshold,
+delay, weight)
+
+SThcells[1].soma SThcells[0].nclist.append(new 
+                NetCon(&v(1), syn[0], -20, 1, 0.5))
